@@ -49,6 +49,8 @@ services:
       context: vote
       dockerfile: Dockerfile
     container_name: vote
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
     ports:
       - "8080:8080"
     depends_on:
@@ -62,6 +64,12 @@ services:
       context: worker
       dockerfile: Dockerfile
     container_name: worker
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      DB_HOST: postgresql
+      DB_USER: okteto
+      DB_PASSWORD: okteto
+      DB_NAME: votes
     depends_on:
       kafka:
         condition: service_healthy
@@ -75,6 +83,8 @@ services:
       context: result
       dockerfile: Dockerfile
     container_name: result
+    environment:
+      DATABASE_URL: postgres://okteto:okteto@postgresql/votes
     ports:
       - "4000:80"
     depends_on:

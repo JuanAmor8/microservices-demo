@@ -16,21 +16,25 @@ import (
 )
 
 var (
-	brokerList        = kingpin.Flag("brokerList", "List of brokers to connect").Default("kafka:9092").Strings()
+	brokerList        = kingpin.Flag("brokerList", "List of brokers to connect").Envar("KAFKA_BOOTSTRAP_SERVERS").Default("kafka:9092").Strings()
 	topic             = kingpin.Flag("topic", "Topic name").Default("votes").String()
 	messageCountStart = kingpin.Flag("messageCountStart", "Message counter start from:").Int()
 )
 
-const (
-	host     = "postgresql"
-	port     = 5432
-	user     = "okteto"
-	password = "okteto"
-	dbname   = "votes"
-)
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok && value != "" {
+		return value
+	}
+	return fallback
+}
 
 func main() {
-	db := openDatabase()
+	dbHost := getEnv("DB_HOST", "postgresql")
+	dbUser := getEnv("DB_USER", "okteto")
+	dbPassword := getEnv("DB_PASSWORD", "okteto")
+	dbName := getEnv("DB_NAME", "votes")
+
+	db := openDatabase(dbHost, dbUser, dbPassword, dbName)
 	defer db.Close()
 
 	pingDatabase(db)
@@ -79,8 +83,8 @@ func main() {
 	log.Println("Processed", *messageCountStart, "messages")
 }
 
-func openDatabase() *sql.DB {
-	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+func openDatabase(host, user, password, dbname string) *sql.DB {
+	psqlconn := fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=%s sslmode=disable", host, user, password, dbname)
 	for {
 		db, err := sql.Open("postgres", psqlconn)
 		if err == nil {
