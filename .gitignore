@@ -19,3 +19,14 @@
 /vote/vote.iml
 
 /browser_screenshots
+
+# Node.js
+node_modules/
+package-lock.json
+
+# Claude Code memory
+.claude/
+
+# IDE
+*.project
+*.classpath
