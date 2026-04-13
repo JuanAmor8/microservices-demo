@@ -1,0 +1,115 @@
+name: Infrastructure - CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 'infra/**'
+    paths:
+      - 'infrastructure/**'
+      - 'vote/chart/**'
+      - 'worker/chart/**'
+      - 'result/chart/**'
+      - 'okteto.yml'
+      - '.github/workflows/infrastructure-ci.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+      - 'vote/chart/**'
+      - 'worker/chart/**'
+      - 'result/chart/**'
+
+jobs:
+  # ── Stage 1: Lint & Validate Helm Charts ──────────────────────────────────
+  helm-lint:
+    name: Helm Lint & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.17.0'
+
+      - name: Lint infrastructure chart
+        run: helm lint infrastructure/
+
+      - name: Lint vote chart
+        run: helm lint vote/chart/
+
+      - name: Lint worker chart
+        run: helm lint worker/chart/
+
+      - name: Lint result chart
+        run: helm lint result/chart/
+
+      - name: Template infrastructure chart (dry-run)
+        run: helm template infrastructure infrastructure/ --debug
+
+      - name: Template vote chart (dry-run)
+        run: helm template vote vote/chart/ --debug
+
+      - name: Template worker chart (dry-run)
+        run: helm template worker worker/chart/ --debug
+
+      - name: Template result chart (dry-run)
+        run: helm template result result/chart/ --debug
+
+  # ── Stage 2: Package Charts ────────────────────────────────────────────────
+  helm-package:
+    name: Package Helm Charts
+    needs: helm-lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.17.0'
+
+      - name: Package all charts
+        run: |
+          mkdir -p packaged-charts
+          helm package infrastructure/ -d packaged-charts/
+          helm package vote/chart/ -d packaged-charts/
+          helm package worker/chart/ -d packaged-charts/
+          helm package result/chart/ -d packaged-charts/
+
+      - name: Upload packaged charts
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-charts
+          path: packaged-charts/
+          retention-days: 30
+
+  # ── Stage 3: Deploy Infrastructure (solo main) ────────────────────────────
+  deploy-infra:
+    name: Deploy Infrastructure
+    needs: helm-package
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy infrastructure stack
+        run: |
+          echo "=== Deploying infrastructure ==="
+          echo "helm upgrade --install infrastructure infrastructure/"
+          echo "helm upgrade --install vote vote/chart/"
+          echo "helm upgrade --install worker worker/chart/"
+          echo "helm upgrade --install result result/chart/"
+          echo "=== Infrastructure deployed successfully ==="
+        # To deploy to a real cluster, configure kubeconfig:
+        # - name: Set up kubeconfig
+        #   run: echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+        # Then run the helm commands above without echo
