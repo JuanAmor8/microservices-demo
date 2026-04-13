@@ -29,12 +29,7 @@ func getEnv(key, fallback string) string {
 }
 
 func main() {
-	dbHost := getEnv("DB_HOST", "postgresql")
-	dbUser := getEnv("DB_USER", "okteto")
-	dbPassword := getEnv("DB_PASSWORD", "okteto")
-	dbName := getEnv("DB_NAME", "votes")
-
-	db := openDatabase(dbHost, dbUser, dbPassword, dbName)
+	db := openDatabase()
 	defer db.Close()
 
 	pingDatabase(db)
@@ -83,10 +78,18 @@ func main() {
 	log.Println("Processed", *messageCountStart, "messages")
 }
 
-func openDatabase(host, user, password, dbname string) *sql.DB {
-	psqlconn := fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=%s sslmode=disable", host, user, password, dbname)
+func openDatabase() *sql.DB {
+	// DATABASE_URL para Railway/cloud, fallback a variables individuales para Docker Compose
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		host := getEnv("DB_HOST", "postgresql")
+		user := getEnv("DB_USER", "okteto")
+		password := getEnv("DB_PASSWORD", "okteto")
+		dbname := getEnv("DB_NAME", "votes")
+		connStr = fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=%s sslmode=disable", host, user, password, dbname)
+	}
 	for {
-		db, err := sql.Open("postgres", psqlconn)
+		db, err := sql.Open("postgres", connStr)
 		if err == nil {
 			return db
 		}
