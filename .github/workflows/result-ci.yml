@@ -49,7 +49,7 @@ jobs:
         working-directory: result
 
       - name: Run tests
-        run: npm test || true
+        run: npm test
         working-directory: result
 
   # ── Stage 2: Build & Push ──────────────────────────────────────────────────

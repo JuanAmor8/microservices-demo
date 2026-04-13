@@ -49,7 +49,7 @@ jobs:
         working-directory: worker
 
       - name: Run tests
-        run: go test -v -race -count=1 ./... || true
+        run: go test -v -race -count=1 ./...
         working-directory: worker
 
   # ── Stage 2: Build & Push ──────────────────────────────────────────────────
