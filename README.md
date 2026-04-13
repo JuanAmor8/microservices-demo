@@ -3,6 +3,13 @@
 Aplicación de votación distribuida implementada con una arquitectura de microservicios.
 Los usuarios votan entre **Tacos** y **Burritos** en tiempo real.
 
+## Demo en Vivo (Railway)
+
+| Servicio | URL |
+|----------|-----|
+| **Vote** | https://microservices-demo-production.up.railway.app |
+| **Result** | https://loving-balance-production-ecc4.up.railway.app |
+
 ## Arquitectura
 
 ![Architecture diagram](architecture.png)
@@ -86,28 +93,19 @@ Para que el pipeline de CI pueda disparar el repo de infra, se necesita un Perso
 2. Permisos: `Contents: Read and Write` en el repo `microservices-demo-infra`
 3. Agregar como secret en este repo: `Settings → Secrets → INFRA_REPO_TOKEN`
 
-## Ejecución Local
+## Ejecución Local (Docker Compose)
 
 ```bash
 git clone https://github.com/JuanAmor8/microservices-demo
 cd microservices-demo
-okteto login
-okteto deploy
+./scripts/deploy-local.sh up
 ```
 
-## Desarrollo por Servicio
+Servicios disponibles en:
+- Vote: http://localhost:8080
+- Result: http://localhost:4000
 
-```bash
-# Vote (Java)
-okteto up vote        # abre shell con hot-reload via mvn spring-boot:run
-
-# Result (Node.js)
-okteto up result      # abre shell con hot-reload via nodemon
-
-# Worker (Go)
-okteto up worker
-make start
-```
+Ver más comandos en [scripts/deploy-local.sh](scripts/deploy-local.sh)
 
 ## Notas
 
