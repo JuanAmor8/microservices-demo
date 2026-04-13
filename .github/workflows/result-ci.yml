@@ -35,11 +35,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: result/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
         working-directory: result
 
       - name: Run security audit
@@ -115,6 +113,7 @@ jobs:
           fi
 
       - name: Dispatch deployment to infra repo
+        continue-on-error: true
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.INFRA_REPO_TOKEN }}

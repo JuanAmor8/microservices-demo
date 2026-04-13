@@ -118,6 +118,7 @@ jobs:
           fi
 
       - name: Dispatch deployment to infra repo
+        continue-on-error: true
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.INFRA_REPO_TOKEN }}
