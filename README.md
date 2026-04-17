@@ -228,16 +228,26 @@ La aplicación está dividida en **servicios pequeños, independientes y deploya
 
 | Rama | Propósito | Protegida |
 |------|-----------|-----------|
-| `main` | Código en producción. Solo recibe merges de `feature/*` vía PR | Si |
+| `main` | Código en producción. Solo recibe merges vía PR | Si |
 | `develop` | Rama de integración. Base para nuevas features | Si |
 
 ### Ramas de soporte
 
 | Patrón | Origen | Destino | Descripción |
 |--------|--------|---------|-------------|
-| `feature/TICKET-descripcion` | `develop` | `develop` | Nueva funcionalidad |
+| `feature/descripcion-kebab` | `develop` | `develop` | Nueva funcionalidad |
 | `hotfix/descripcion` | `main` | `main` + `develop` | Corrección urgente en producción |
 | `bugfix/descripcion` | `develop` | `develop` | Corrección de bugs no urgentes |
+
+### Ramas existentes en el repositorio
+
+| Rama | Tipo | Estado | Descripción |
+|------|------|--------|-------------|
+| `main` | Principal | Activa | Código en producción — Railway |
+| `develop` | Integración | Activa | Base para nuevas features |
+| `feature/docs-readme-completo` | Feature | Mergeada (PR #5) | Documentación completa del proyecto |
+| `feature/fix-ci-tests-worker-result` | Feature | Mergeada (PR #3) | Corrección de CI, tests de worker y result |
+| `feature/update-railway-urls-and-ui` | Feature | Mergeada (PR #6) | Actualización de URLs Railway y cambios de UI |
 
 ### Flujo completo
 
